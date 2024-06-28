@@ -1,0 +1,979 @@
+[
+    {
+        "id": "09511f18604ec6f4",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "3cc11d24.ff01a2",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "WARNING: please check you have started this container with a volume that is mounted to /data\\n otherwise any flow changes are lost when you redeploy or upgrade the container\\n (e.g. upgrade to a more recent node-red docker image).\\n  If you are using named volumes you can ignore this warning.\\n Double click or see info side panel to learn how to start Node-RED in Docker to save your work",
+        "info": "\nTo start docker with a bind mount volume (-v option), for example:\n\n```\ndocker run -it -p 1880:1880 -v /home/user/node_red_data:/data --name mynodered nodered/node-red\n```\n\nwhere `/home/user/node_red_data` is a directory on your host machine where you want to store your flows.\n\nIf you do not do this then you can experiment and redploy flows, but if you restart or upgrade the container the flows will be disconnected and lost. \n\nThey will still exist in a hidden data volume, which can be recovered using standard docker techniques, but that is much more complex than just starting with a named volume as described above.",
+        "x": 350,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "1e257c7044937c54",
+        "type": "http in",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "url": "/get-album-meta",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 290,
+        "y": 440,
+        "wires": [
+            [
+                "173a6d3231c34af4"
+            ]
+        ]
+    },
+    {
+        "id": "1fd6e7e42e88b5f9",
+        "type": "http response",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 1320,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "6249ed191226b9e1",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Login Request Params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api_url",
+                "pt": "msg",
+                "to": "$.base_url & \"/webapi/entry.cgi\"",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Core.Sharing.Login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 1020,
+        "wires": [
+            [
+                "3db85e21dbee8df6"
+            ]
+        ]
+    },
+    {
+        "id": "3db85e21dbee8df6",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "LOGIN",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&sharing_id={{{sharing_id}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 480,
+        "y": 1020,
+        "wires": [
+            [
+                "2d3e880690740acd",
+                "8aa4a883fd4a614e"
+            ]
+        ]
+    },
+    {
+        "id": "fad8b37c3339c77c",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "GET ALBUM COUNT",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 720,
+        "y": 1120,
+        "wires": [
+            [
+                "a261f619c191b0d7"
+            ]
+        ]
+    },
+    {
+        "id": "2d3e880690740acd",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Album Count Parameters",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Foto.Browse.Album",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "get",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "cookies",
+                "pt": "msg",
+                "to": "responseCookies",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\t    \"X-SYNO-SHARING\": $.sharing_id\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 470,
+        "y": 1120,
+        "wires": [
+            [
+                "fad8b37c3339c77c"
+            ]
+        ]
+    },
+    {
+        "id": "a261f619c191b0d7",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Check Length",
+        "func": "const l = msg.payload.data.list[0].item_count;\n\nvar currentPhoto = flow.get(\"current_photo\");\nvar c = 0;\nif (currentPhoto && currentPhoto.offset) {\n    c = flow.get(\"current_photo\").offset + 1;\n}\n\nif (c >= l) c = 0; // reset counter if album length exceeded\n\nmsg.api_offset = c;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 1120,
+        "wires": [
+            [
+                "f23c840bd7fc494c"
+            ]
+        ]
+    },
+    {
+        "id": "b1485a070212092e",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&additional={{{api_additional}}}&offset={{{api_offset}}}&limit={{{api_limit}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 1240,
+        "wires": [
+            [
+                "a58d58fcb7acddb2"
+            ]
+        ]
+    },
+    {
+        "id": "f23c840bd7fc494c",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Album Count Parameters",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Foto.Browse.Item",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "list",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_additional",
+                "pt": "msg",
+                "to": "[\"thumbnail\"]",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_limit",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\t    \"X-SYNO-SHARING\": $.sharing_id\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 610,
+        "y": 1240,
+        "wires": [
+            [
+                "b1485a070212092e"
+            ]
+        ]
+    },
+    {
+        "id": "a58d58fcb7acddb2",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Capture Image Metadata",
+        "func": "flow.set(\"current_photo\", {\n    \"api_url\": msg.api_url,\n    \"offset\": msg.api_offset,\n    \"sharing_id\": msg.sharing_id,\n    \"id\": msg.payload.data.list[0].id,\n    \"cache_key\": msg.payload.data.list[0].additional.thumbnail.cache_key,\n    \"cookies\": msg.cookies\n});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1090,
+        "y": 1240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8aa4a883fd4a614e",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 55",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "173a6d3231c34af4",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Login Request Params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api_url",
+                "pt": "msg",
+                "to": "$env(\"VITE_SYNOLOGY_BASE_URI\") & \"/webapi/entry.cgi\"",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Core.Sharing.Login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "sharing_id",
+                "pt": "msg",
+                "to": "VITE_SHARING_ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 480,
+        "wires": [
+            [
+                "5a50a72e7f25acb6"
+            ]
+        ]
+    },
+    {
+        "id": "a3bcfc85fd9eed84",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 320,
+        "y": 540,
+        "wires": [
+            [
+                "173a6d3231c34af4"
+            ]
+        ]
+    },
+    {
+        "id": "5a50a72e7f25acb6",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "LOGIN",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&sharing_id={{{sharing_id}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 760,
+        "y": 480,
+        "wires": [
+            [
+                "6df27ccffbeee0d8"
+            ]
+        ]
+    },
+    {
+        "id": "6df27ccffbeee0d8",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Album Count Parameters",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Foto.Browse.Album",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "get",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "cookies",
+                "pt": "msg",
+                "to": "responseCookies",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\t    \"X-SYNO-SHARING\": $.sharing_id\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 950,
+        "y": 480,
+        "wires": [
+            [
+                "676247dbf32a149d"
+            ]
+        ]
+    },
+    {
+        "id": "676247dbf32a149d",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "GET ALBUM COUNT",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1180,
+        "y": 480,
+        "wires": [
+            [
+                "eb071d216aaeb43a"
+            ]
+        ]
+    },
+    {
+        "id": "eb071d216aaeb43a",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Album Count Parameters",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Foto.Browse.Item",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "list",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_additional",
+                "pt": "msg",
+                "to": "[\"thumbnail\"]",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_limit",
+                "pt": "msg",
+                "to": "payload.data.list[0].item_count",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\t    \"X-SYNO-SHARING\": $.sharing_id\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 910,
+        "y": 620,
+        "wires": [
+            [
+                "4a3920a550b88739"
+            ]
+        ]
+    },
+    {
+        "id": "4a3920a550b88739",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&additional={{{api_additional}}}&offset=0&limit={{{api_limit}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1130,
+        "y": 620,
+        "wires": [
+            [
+                "1fd6e7e42e88b5f9"
+            ]
+        ]
+    },
+    {
+        "id": "a2a58aea2dab8c60",
+        "type": "http in",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "url": "/get-image",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 800,
+        "wires": [
+            [
+                "736c7349b540fd2c"
+            ]
+        ]
+    },
+    {
+        "id": "736c7349b540fd2c",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Login Request Params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api_url",
+                "pt": "msg",
+                "to": "$env(\"VITE_SYNOLOGY_BASE_URI\") & \"/webapi/entry.cgi\"",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Core.Sharing.Login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "sharing_id",
+                "pt": "msg",
+                "to": "VITE_SHARING_ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 800,
+        "wires": [
+            [
+                "547015bb7d07fe22"
+            ]
+        ]
+    },
+    {
+        "id": "547015bb7d07fe22",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "LOGIN",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&sharing_id={{{sharing_id}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 840,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1ca135b95a58978",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "method": "use",
+        "ret": "bin",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1030,
+        "y": 1420,
+        "wires": [
+            [
+                "872fbffdaec47edc"
+            ]
+        ]
+    },
+    {
+        "id": "f006b2f3b64d3e5c",
+        "type": "http response",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "image/jpeg"
+        },
+        "x": 1460,
+        "y": 1420,
+        "wires": []
+    },
+    {
+        "id": "d4c9a4c246d375fc",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Image Request Params",
+        "func": "var d = flow.get(\"current_photo\");\n\nmsg.url = env.get(\"VITE_SYNOLOGY_BASE_URI\") + \"/webapi/entry.cgi\"\n    + \"?api=SYNO.Foto.Thumbnail&method=get&version=2&type=unit&size=xl\" \n    + \"&_sharing_id=\" + msg.req.query.sharingId\n    + \"&id=\" + msg.req.query.id\n    + \"&cache_key=\" + msg.req.query.cacheKey;\n\nmsg.method = \"GET\";\nmsg.cookies = msg.responseCookies;\nmsg.headers = {\n    \"X-SYNO-SHARING\": msg.req.query.sharingId\n};\nmsg.width = parseInt(env.get(\"VITE_WIDTH\"))\nmsg.height = parseInt(env.get(\"VITE_HEIGHT\"))\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 1420,
+        "wires": [
+            [
+                "f1ca135b95a58978"
+            ]
+        ]
+    },
+    {
+        "id": "872fbffdaec47edc",
+        "type": "jimp-image",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "data": "payload",
+        "dataType": "msg",
+        "ret": "buf",
+        "parameter1": "width",
+        "parameter1Type": "msg",
+        "parameter2": "height",
+        "parameter2Type": "msg",
+        "parameter3": "",
+        "parameter3Type": "none",
+        "parameter4": "RESIZE_NEAREST_NEIGHBOR",
+        "parameter4Type": "resizeMode",
+        "parameter5": "",
+        "parameter5Type": "msg",
+        "parameter6": "",
+        "parameter6Type": "msg",
+        "parameter7": "",
+        "parameter7Type": "msg",
+        "parameter8": "",
+        "parameter8Type": "msg",
+        "sendProperty": "payload",
+        "sendPropertyType": "msg",
+        "parameterCount": 4,
+        "jimpFunction": "contain",
+        "selectedJimpFunction": {
+            "name": "contain",
+            "fn": "contain",
+            "description": "scale the image to the given width and height, some parts of the image may be letter boxed",
+            "parameters": [
+                {
+                    "name": "w",
+                    "type": "num",
+                    "required": true,
+                    "hint": "the width to resize the image to"
+                },
+                {
+                    "name": "h",
+                    "type": "num",
+                    "required": true,
+                    "hint": "the height to resize the image to"
+                },
+                {
+                    "name": "alignBits",
+                    "type": "alignMode",
+                    "required": false,
+                    "hint": "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;"
+                },
+                {
+                    "name": "mode",
+                    "type": "resizeMode",
+                    "required": false,
+                    "hint": "A scaling method (e.g. Jimp.RESIZE_BEZIER)"
+                }
+            ]
+        },
+        "x": 1220,
+        "y": 1420,
+        "wires": [
+            [
+                "f006b2f3b64d3e5c",
+                "5e7d021a21ea1b0c"
+            ]
+        ]
+    },
+    {
+        "id": "5e7d021a21ea1b0c",
+        "type": "image viewer",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "width": 160,
+        "data": "payload",
+        "dataType": "msg",
+        "active": true,
+        "x": 1690,
+        "y": 1560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cb74e107e76de494",
+        "type": "http in",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "url": "/image",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 1420,
+        "wires": [
+            [
+                "1fc07254a63a0673"
+            ]
+        ]
+    },
+    {
+        "id": "1fc07254a63a0673",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Login Request Params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "api_url",
+                "pt": "msg",
+                "to": "$env(\"VITE_SYNOLOGY_BASE_URI\") & \"/webapi/entry.cgi\"",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "api",
+                "pt": "msg",
+                "to": "SYNO.Core.Sharing.Login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_method",
+                "pt": "msg",
+                "to": "login",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "api_version",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "sharing_id",
+                "pt": "msg",
+                "to": "VITE_SHARING_ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 400,
+        "y": 1420,
+        "wires": [
+            [
+                "d7b20faf3309de5e"
+            ]
+        ]
+    },
+    {
+        "id": "d7b20faf3309de5e",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "LOGIN",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{api_url}}}?api={{{api}}}&method={{{api_method}}}&version={{{api_version}}}&sharing_id={{{sharing_id}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 580,
+        "y": 1420,
+        "wires": [
+            [
+                "d4c9a4c246d375fc",
+                "c25189f3401db021"
+            ]
+        ]
+    },
+    {
+        "id": "c25189f3401db021",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 56",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "4a9233e24046aba6",
+        "type": "http response",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 480,
+        "y": 1380,
+        "wires": []
+    }
+]
