@@ -10,16 +10,17 @@ class SlideshowImage {
     constructor(public id: string, public base64String: string | null, public isActive = false) { }
 }
 
-const sharingId = import.meta.env.VITE_SHARING_ID
-const apiBaseUrl = import.meta.env.VITE_SYNOLOGY_BASE_URI
-const width = import.meta.env.VITE_WIDTH ?? 600;
-const height = import.meta.env.VITE_HEIGHT ?? 400;
-
-let loggedIn = ref(false)
+let shareUrl: string
+let width: string = "600"
+let height: string = "400"
 let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
 let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
-        
-let albumLength = ref(0)
+
+const albumLength = computed(() => {
+    if (albumItems.value) return albumItems.value.length
+    else return 0
+})
+
 let slideshowPosition = ref(0)
 const nextPosition = computed(() => {
     if (albumLength.value > 0) {
@@ -40,52 +41,8 @@ const prevPosition = computed(() => {
     return 0
 })
 
-const apiLoginAsync = async() => {
-    const url = `${apiBaseUrl}/webapi/entry.cgi?api=SYNO.Core.Sharing.Login&method=login&version=1&sharing_id=0JDygnhoy`
-    return axios({
-        url,
-        method: 'GET',
-        withCredentials: true,
-    })
-}
-
-const apiBrowseAlbumAsync = async() => {
-    const url = `${apiBaseUrl}/webapi/entry.cgi?api=SYNO.Foto.Browse.Album&method=get&version=1`
-    return axios({
-        url,
-        method: 'GET',
-        withCredentials: true,
-        headers: {
-            'X-SYNO-SHARING': sharingId
-        }
-    })
-}
-
-const apiBrowseItemAsync = async(limit: number) => {
-    const url = `${apiBaseUrl}/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&method=list&version=1&additional=["thumbnail"]&offset=0&limit=${limit}`
-    return axios({
-        url,
-        method: 'GET',
-        withCredentials: true,
-        headers: {
-            'X-SYNO-SHARING': sharingId
-        }
-    })
-}
-
-const apiThumbnail = async(id: string, cacheKey: string, size = 'xl') => {
-    // const url = `${apiBaseUrl}/webapi/entry.cgi?api=SYNO.Foto.Thumbnail&method=get&version=2&type=unit&size=${size}&_sharing_id=${sharingId}&id=${id}&cache_key=${cacheKey}`
-    // return axios({
-    //     url,
-    //     method: 'GET',
-    //     withCredentials: true,
-    //     headers: {
-    //         'X-SYNO-SHARING': sharingId
-    //     },
-    //     responseType: 'blob'
-    // })
-
-    const url = `http://127.0.0.1:1880/image?sharingId=${sharingId}&id=${id}&cacheKey=${cacheKey}`
+const getImage = async(id: string, cacheKey: string, size = 'xl') => {
+    const url = `/backend/image?shareUrl=${shareUrl}&id=${id}&cacheKey=${cacheKey}&height=${height}&width=${width}`
     return axios({
         url,
         method: 'GET',
@@ -93,15 +50,38 @@ const apiThumbnail = async(id: string, cacheKey: string, size = 'xl') => {
     })
 }
 
-const login = async() => {
-    apiLoginAsync().then(() => loggedIn.value = true)
+let error = ref("")
+
+const getParamFromQueryString = (param: string, required = false) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const val = urlParams.get(param)
+    if (required && !val) {
+        error.value = "Missing required query string param " + param
+        console.error(error.value)
+    }
+    return val
 }
 
-const indexAlbum = async() => {
-    let response = await apiBrowseAlbumAsync()
-    albumLength.value = response.data.data.list[0].item_count
+onMounted(async () => {
+    width = getParamFromQueryString('w', false) ?? width
+    height = getParamFromQueryString('h', false) ?? height
 
-    response = await apiBrowseItemAsync(albumLength.value)
+    const shareUrlParam = getParamFromQueryString('shareUrl', true)
+
+    if (shareUrlParam) {
+        shareUrl = shareUrlParam
+        await indexAlbum()
+        await show(0)
+        play()
+    }
+})
+
+const indexAlbum = async() => {
+    const response = await axios({
+        url: '/backend/get-album-meta?shareUrl=' + shareUrl,
+        method: 'GET'
+    })
+    
     albumItems.value = response.data.data.list.map((item: any) => new AlbumItem(item.id, item.additional.thumbnail.cache_key))
 }
 
@@ -146,7 +126,7 @@ const show = async(position: number) => {
                     base64Data = slideshowImages.value[i].base64String
                 }
                 else {
-                    const response = await apiThumbnail(item.id, item.cacheKey)
+                    const response = await getImage(item.id, item.cacheKey)
                     base64Data = await blobToBase64Async(response.data) as string
                 }
             }
@@ -180,42 +160,21 @@ watch(slideshowPosition, (newPosition: number) => {
 </script>
 
 <template>
-    <!-- <h1>Sharing ID: {{ sharingId }}</h1> -->
-    <!-- <h2 v-show="albumLength > 0">Album Length: {{ albumLength }}</h2> -->
-    <!-- <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Cache Key</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="item in albumItems">
-                <td>{{ item.id }}</td>
-                <td>{{ item.cacheKey }}</td>
-            </tr>
-        </tbody>
-    </table> -->
-    <div>
-        <button v-show="!loggedIn" type="button" @click="login">Login</button>
-        <button v-show="loggedIn" type="button" @click="indexAlbum">Index Album</button>
-        <div v-show="albumItems && albumItems.length > 0">
-            <button @click="show(0)">Show</button>
-            <button @click="prev">Prev</button>
-            <button @click="next">Next</button>
-            <button @click="play(!playing)">{{ playing ? "Playing" : "Paused" }}</button>
-        </div>
-    </div>
     <div style="position:relative">
+        <p v-if="error" class="error">{{ error }}</p>
         <Transition v-for="item in slideshowImages" name="fade" :key="item.id">
             <div v-show="item.isActive" style="position:absolute">
-                <img :src="item.base64String ?? ''" :width="width" :height="height" />
+                <img :src="item.base64String ?? ''" />
             </div>
         </Transition>
     </div>
 </template>
 
 <style scoped>
+.error {
+    color: red
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;

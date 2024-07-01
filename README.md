@@ -1,39 +1,25 @@
-# vue-project
+# syno-slideshow
 
-This template should help get you started developing with Vue 3 in Vite.
+Turn a shared album from Synology Photos into a simple slideshow.
 
-## Recommended IDE Setup
+# Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+```
+$ git clone https://github.com/akmolina28/syno-slideshow.git
 
-## Type Support for `.vue` Imports in TS
+$ cd syno-slideshow
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+$ docker compose up -d
 ```
 
-### Compile and Hot-Reload for Development
+Open browser to http://localhost:8089/
 
-```sh
-npm run dev
-```
+## Url Options
 
-### Type-Check, Compile and Minify for Production
+|Option|Description|Required|Default|
+|-|-|-|-|
+|shareUrl|The share link for your album|yes|-
+|w|Set width in pixels|no|600
+|h|Set height in pixels|no|400
 
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+Example: http://localhost:8089/?shareUrl=https://johndoe.synology.me/photo/mo/sharing/abcd1234&h=900&w=900
