@@ -21,6 +21,7 @@ let shareUrl: string
 let width: string = '600'
 let height: string = '400'
 let size: string = 'm'
+let random = false
 let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
 let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
 
@@ -30,6 +31,14 @@ const albumLength = computed(() => {
 })
 
 let slideshowPosition = ref(0)
+const shuffleItems = (arr: Array<AlbumItem>) => {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1))
+    var temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
+  }
+}
 const nextPosition = computed(() => {
   if (albumLength.value > 0) {
     if (slideshowPosition.value == albumLength.value - 1) {
@@ -67,6 +76,7 @@ const getParamFromQueryString = (param: string, required = false) => {
     error.value = 'Missing required query string param ' + param
     console.error(error.value)
   }
+  if (val == '') return 'true'
   return val
 }
 
@@ -74,6 +84,7 @@ onMounted(async () => {
   width = getParamFromQueryString('w', false) ?? width
   height = getParamFromQueryString('h', false) ?? height
   size = getParamFromQueryString('size', false) ?? size
+  random = getParamFromQueryString('random') ? true : false
 
   const shareUrlParam = getParamFromQueryString('shareUrl', true)
 
@@ -94,6 +105,9 @@ const indexAlbum = async () => {
   albumItems.value = response.data.data.list.map(
     (item: any) => new AlbumItem(item.id, item.additional.thumbnail.cache_key)
   )
+  if (albumItems.value && random) {
+    shuffleItems(albumItems.value)
+  }
 }
 
 const blobToBase64Async = (blob: Blob) => {

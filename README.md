@@ -24,8 +24,9 @@ The slideshow is configured using URL query params.
 | w            | Set width in pixels           | no       | `600`   |
 | h            | Set height in pixels          | no       | `400`   |
 | size         | Choose image size (xl, m, sm) | no       | `m`     |
+| random       | Randomize order               | no       |         |
 
-Example url: http://localhost:8089/?shareUrl=https://johndoe.synology.me/photo/mo/sharing/abcd1234&h=900&w=900
+Example url: http://localhost:8089/?shareUrl=https://johndoe.synology.me/photo/mo/sharing/abcd1234&h=900&w=900&random
 
 # Build and debug
 
