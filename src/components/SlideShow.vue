@@ -20,6 +20,7 @@ class SlideshowImage {
 let shareUrl: string
 let width: string = '600'
 let height: string = '400'
+let size: string = 'm'
 let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
 let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
 
@@ -72,6 +73,7 @@ const getParamFromQueryString = (param: string, required = false) => {
 onMounted(async () => {
   width = getParamFromQueryString('w', false) ?? width
   height = getParamFromQueryString('h', false) ?? height
+  size = getParamFromQueryString('size', false) ?? size
 
   const shareUrlParam = getParamFromQueryString('shareUrl', true)
 
@@ -121,7 +123,7 @@ const show = async (position: number) => {
           if (slideshowImages.value.length > 0 && slideshowImages.value[i].base64String) {
             base64Data = slideshowImages.value[i].base64String
           } else {
-            const response = await getImage(item.id, item.cacheKey)
+            const response = await getImage(item.id, item.cacheKey, size)
             base64Data = (await blobToBase64Async(response.data)) as string
           }
         }

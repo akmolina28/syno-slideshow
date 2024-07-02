@@ -306,7 +306,7 @@
         "type": "function",
         "z": "f6f2187d.f17ca8",
         "name": "Image Request Params",
-        "func": "msg.url = msg.api_url + \"/webapi/entry.cgi\"\n    + \"?api=SYNO.Foto.Thumbnail&method=get&version=2&type=unit&size=xl\" \n    + \"&_sharing_id=\" + msg.sharing_id\n    + \"&id=\" + msg.req.query.id\n    + \"&cache_key=\" + msg.req.query.cacheKey;\n\nmsg.method = \"GET\";\nmsg.cookies = msg.responseCookies;\nmsg.headers = {\n    \"X-SYNO-SHARING\": msg.sharing_id\n};\n\nreturn msg;",
+        "func": "msg.url = msg.api_url + \"/webapi/entry.cgi\"\n    + \"?api=SYNO.Foto.Thumbnail&method=get&version=2&type=unit\"\n    + \"&size=\" + msg.size \n    + \"&_sharing_id=\" + msg.sharing_id\n    + \"&id=\" + msg.req.query.id\n    + \"&cache_key=\" + msg.req.query.cacheKey;\n\nmsg.method = \"GET\";\nmsg.cookies = msg.responseCookies;\nmsg.headers = {\n    \"X-SYNO-SHARING\": msg.sharing_id\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -384,24 +384,8 @@
         "y": 560,
         "wires": [
             [
-                "f006b2f3b64d3e5c",
-                "5e7d021a21ea1b0c"
+                "f006b2f3b64d3e5c"
             ]
-        ]
-    },
-    {
-        "id": "5e7d021a21ea1b0c",
-        "type": "image viewer",
-        "z": "f6f2187d.f17ca8",
-        "name": "",
-        "width": 160,
-        "data": "payload",
-        "dataType": "msg",
-        "active": true,
-        "x": 1910,
-        "y": 700,
-        "wires": [
-            []
         ]
     },
     {
@@ -511,7 +495,7 @@
         "type": "function",
         "z": "f6f2187d.f17ca8",
         "name": "",
-        "func": "const shareUrl = msg.req.query.shareUrl;\n\nconst baseUrlRe = /^.+?[^\\/:](?=[?\\/]|$)/;\nmsg.api_url = baseUrlRe.exec(shareUrl)[0] + \"/webapi/entry.cgi\";\n\nconst sharingIdRe = /(?!.*\\/).+/\nmsg.sharing_id = sharingIdRe.exec(shareUrl)[0]\n\nmsg.width = parseInt(msg.req.query.width ?? \"600\")\nmsg.height = parseInt(msg.req.query.height ?? \"400\")\n\nreturn msg;",
+        "func": "const shareUrl = msg.req.query.shareUrl;\n\nconst baseUrlRe = /^.+?[^\\/:](?=[?\\/]|$)/;\nmsg.api_url = baseUrlRe.exec(shareUrl)[0] + \"/webapi/entry.cgi\";\n\nconst sharingIdRe = /(?!.*\\/).+/\nmsg.sharing_id = sharingIdRe.exec(shareUrl)[0]\n\nmsg.width = parseInt(msg.req.query.width ?? \"600\")\nmsg.height = parseInt(msg.req.query.height ?? \"400\")\n\nmsg.size = parseInt(msg.req.query.size ?? \"xl\")\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -522,25 +506,8 @@
         "y": 560,
         "wires": [
             [
-                "1fc07254a63a0673",
-                "5972efa2b0448f59"
+                "1fc07254a63a0673"
             ]
         ]
-    },
-    {
-        "id": "5972efa2b0448f59",
-        "type": "debug",
-        "z": "f6f2187d.f17ca8",
-        "name": "debug 2",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 580,
-        "y": 700,
-        "wires": []
     }
 ]
