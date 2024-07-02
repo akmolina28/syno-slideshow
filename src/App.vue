@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Slideshow from './components/Slideshow.vue'
+import SlideShow from './components/SlideShow.vue'
 </script>
 
 <template>
   <main>
-    <Slideshow></Slideshow>
+    <SlideShow></SlideShow>
   </main>
 </template>
