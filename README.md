@@ -1,6 +1,6 @@
 # syno-slideshow
 
-Turn a shared album from Synology Photos into a simple slideshow.
+Turn a shared album from Synology Photos into a simple slideshow, perfect for embedding on your smart home displays.
 
 # Installation
 
