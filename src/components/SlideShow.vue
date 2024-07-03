@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, type Ref, computed, watch } from 'vue'
 import axios from 'axios'
+import DigitalClock from './DigitalClock.vue'
+import DateDisplay from './DateDisplay.vue'
 
 class AlbumItem {
   constructor(
@@ -21,6 +23,8 @@ let shareUrl: string
 let width: string = '600'
 let height: string = '400'
 let size: string = 'm'
+let hideTime = false
+let hideDate = false
 let random = false
 let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
 let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
@@ -85,6 +89,8 @@ onMounted(async () => {
   height = getParamFromQueryString('h', false) ?? height
   size = getParamFromQueryString('size', false) ?? size
   random = getParamFromQueryString('random') ? true : false
+  hideDate = getParamFromQueryString('hideDate') ? true : false
+  hideTime = getParamFromQueryString('hideTime') ? true : false
 
   const shareUrlParam = getParamFromQueryString('shareUrl', true)
 
@@ -170,8 +176,10 @@ watch(slideshowPosition, (newPosition: number) => {
 </script>
 
 <template>
-  <div style="position: relative">
+  <div :style="'position: relative;height: ' + height + 'px;width: ' + width + 'px;'">
     <p v-if="error" class="error">{{ error }}</p>
+    <DateDisplay v-if="!hideDate"></DateDisplay>
+    <DigitalClock v-if="!hideTime"></DigitalClock>
     <Transition v-for="item in slideshowImages" name="fade" :key="item.id">
       <div v-show="item.isActive" style="position: absolute">
         <img :src="item.base64String ?? ''" />
@@ -193,5 +201,27 @@ watch(slideshowPosition, (newPosition: number) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+.digital-clock,
+.date-display {
+  color: #f1f1f1;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  z-index: 1;
+  font-family: monospace;
+  font-size: 58px;
+  text-shadow:
+    0.05em 0 rgba(0, 0, 0, 0.3),
+    0 0.05em rgba(0, 0, 0, 0.3),
+    -0.05em 0 rgba(0, 0, 0, 0.3),
+    0 -0.05em rgba(0, 0, 0, 0.3),
+    -0.05em -0.05em rgba(0, 0, 0, 0.3),
+    -0.05em 0.05em rgba(0, 0, 0, 0.3),
+    0.05em -0.05em rgba(0, 0, 0, 0.3),
+    0.05em 0.05em rgba(0, 0, 0, 0.3);
+}
+.date-display {
+  left: 1em;
 }
 </style>

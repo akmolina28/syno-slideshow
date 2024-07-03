@@ -25,6 +25,8 @@ The slideshow is configured using URL query params.
 | h            | Set height in pixels          | no       | `400`   |
 | size         | Choose image size (xl, m, sm) | no       | `m`     |
 | random       | Randomize order               | no       |         |
+| hideDate     | hide the date display         | no       |         |
+| hideTime     | hide the time display         | no       |         |
 
 Example url: http://localhost:8089/?shareUrl=https://johndoe.synology.me/photo/mo/sharing/abcd1234&h=900&w=900&random
 
