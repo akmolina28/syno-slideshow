@@ -26,63 +26,8 @@ let size: string = 'm'
 let hideTime = false
 let hideDate = false
 let random = false
-let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
-let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
-
-const albumLength = computed(() => {
-  if (albumItems.value) return albumItems.value.length
-  else return 0
-})
-
-let slideshowPosition = ref(0)
-const shuffleItems = (arr: Array<AlbumItem>) => {
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1))
-    var temp = arr[i]
-    arr[i] = arr[j]
-    arr[j] = temp
-  }
-}
-const nextPosition = computed(() => {
-  if (albumLength.value > 0) {
-    if (slideshowPosition.value == albumLength.value - 1) {
-      return 0
-    }
-    return slideshowPosition.value + 1
-  }
-  return 0
-})
-const prevPosition = computed(() => {
-  if (albumLength.value > 0) {
-    if (slideshowPosition.value == 0) {
-      return albumLength.value - 1
-    }
-    return slideshowPosition.value - 1
-  }
-  return 0
-})
-
-const getImage = async (id: string, cacheKey: string, size = 'xl') => {
-  const url = `/backend/image?shareUrl=${shareUrl}&id=${id}&cacheKey=${cacheKey}&height=${height}&width=${width}&size=${size}`
-  return axios({
-    url,
-    method: 'GET',
-    responseType: 'blob'
-  })
-}
 
 let error = ref('')
-
-const getParamFromQueryString = (param: string, required = false) => {
-  const urlParams = new URLSearchParams(window.location.search)
-  const val = urlParams.get(param)
-  if (required && !val) {
-    error.value = 'Missing required query string param ' + param
-    console.error(error.value)
-  }
-  if (val == '') return 'true'
-  return val
-}
 
 onMounted(async () => {
   width = getParamFromQueryString('w', false) ?? width
@@ -101,6 +46,64 @@ onMounted(async () => {
     play()
   }
 })
+
+const getParamFromQueryString = (param: string, required = false) => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const val = urlParams.get(param)
+  if (required && !val) {
+    error.value = 'Missing required query string param ' + param
+    console.error(error.value)
+  }
+  if (val == '') return 'true'
+  return val
+}
+
+let albumItems: Ref<Array<AlbumItem> | null> = ref(null)
+let slideshowImages: Ref<Array<SlideshowImage>> = ref([])
+let slideshowPosition = ref(0)
+
+const albumLength = computed(() => {
+  if (albumItems.value) return albumItems.value.length
+  else return 0
+})
+
+const nextPosition = computed(() => {
+  if (albumLength.value > 0) {
+    if (slideshowPosition.value == albumLength.value - 1) {
+      return 0
+    }
+    return slideshowPosition.value + 1
+  }
+  return 0
+})
+
+const prevPosition = computed(() => {
+  if (albumLength.value > 0) {
+    if (slideshowPosition.value == 0) {
+      return albumLength.value - 1
+    }
+    return slideshowPosition.value - 1
+  }
+  return 0
+})
+
+const shuffleItems = (arr: Array<AlbumItem>) => {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1))
+    var temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
+  }
+}
+
+const getImage = async (id: string, cacheKey: string, size = 'xl') => {
+  const url = `/backend/image?shareUrl=${shareUrl}&id=${id}&cacheKey=${cacheKey}&height=${height}&width=${width}&size=${size}`
+  return axios({
+    url,
+    method: 'GET',
+    responseType: 'blob'
+  })
+}
 
 const indexAlbum = async () => {
   const response = await axios({
